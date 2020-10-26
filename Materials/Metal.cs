@@ -13,7 +13,7 @@
 
         public override bool Scatter(Ray ray, Object3D rec, out Vector3 attenuation, out Ray scattered)
         {
-            var reflected = Reflect(ray.Direction.ToUnit(), rec.Normal);
+            var reflected = Reflect(Vector3.UnitVector(ray.Direction), rec.Normal);
             scattered = new Ray(rec.P, reflected + Fuzz * Program.RandomInUnitSphere());
             attenuation = Color;
             return Vector3.DotProduct(scattered.Direction, rec.Normal) > 0;

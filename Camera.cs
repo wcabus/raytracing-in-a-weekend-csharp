@@ -1,4 +1,6 @@
-﻿namespace RayTracing
+﻿using System;
+
+namespace RayTracing
 {
     public class Camera
     {
@@ -6,29 +8,43 @@
         private readonly Vector3 _lowerLeftCorner;
         private readonly Vector3 _horizontal;
         private readonly Vector3 _vertical;
-        
-        public Camera()
-        {
-            AspectRatio = 16.0 / 9;
-            ViewportHeight = 2;
-            ViewportWidth = AspectRatio * ViewportHeight;
-            FocalLength = 1;
+        private readonly double _lensRadius;
+        private readonly Vector3 _w, _u, _v;
 
-            _origin = Vector3.Zero;
-            _horizontal = new Vector3(ViewportWidth, 0, 0);
-            _vertical = new Vector3(0, ViewportHeight, 0);
-            _lowerLeftCorner = _origin - _horizontal / 2 - _vertical / 2 - new Vector3(0, 0, FocalLength);
+        public Camera(
+            Vector3 lookFrom,
+            Vector3 lookAt,
+            Vector3 vup,
+            double vFov,
+            double aspectRatio,
+            double aperture,
+            double focusDistance
+        )
+        {
+            var theta = vFov.ToRadians();
+            var h = Math.Tan(theta / 2);
+            var viewportHeight = 2 * h;
+            var viewportWidth = aspectRatio * viewportHeight;
+
+            _w = Vector3.UnitVector(lookFrom - lookAt);
+            _u = Vector3.UnitVector(Vector3.CrossProduct(vup, _w));
+            _v = Vector3.CrossProduct(_w, _u);
+            
+            _origin = lookFrom;
+            _horizontal = focusDistance * viewportWidth * _u;
+            _vertical = focusDistance * viewportHeight * _v;
+            _lowerLeftCorner = _origin - _horizontal / 2 - _vertical / 2 - focusDistance * _w;
+            _lensRadius = aperture / 2;
         }
 
-        public Ray GetRay(double u, double v)
+        public Ray GetRay(double s, double t)
         {
-            return new Ray(_origin, _lowerLeftCorner + u * _horizontal + v * _vertical - _origin);
+            var rd = _lensRadius * Program.RandomInUnitDisc();
+            var offset = _u * rd.X + _v * rd.Y;
+            
+            return new Ray(
+                _origin + offset,
+                _lowerLeftCorner + s * _horizontal + t * _vertical - _origin - offset);
         }
-        
-        public double AspectRatio { get; }
-        public double ViewportHeight { get; }
-        public double ViewportWidth { get; }
-        public double FocalLength { get; }
-        
     }
 }

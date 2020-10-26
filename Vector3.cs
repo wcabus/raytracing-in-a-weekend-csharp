@@ -1,14 +1,14 @@
 ﻿using System;
+using System.Drawing;
 using System.IO;
 using System.Threading.Tasks;
 
 namespace RayTracing
 {
-    public class Vector3
+    public struct Vector3
     {
         public static Vector3 Zero => new Vector3();
         
-        private Vector3() : this(0,0,0) {}
         public Vector3(double x, double y, double z)
         {
             X = x;
@@ -16,19 +16,14 @@ namespace RayTracing
             Z = z;
         }
         
-        public double X { get; private set; }
-        public double Y { get; private set; }
-        public double Z { get; private set; }
+        public double X { get; set; }
+        public double Y { get; set; }
+        public double Z { get; set; }
 
         public double Length => Math.Sqrt(LengthSquared);
         public double LengthSquared => X * X + Y * Y + Z * Z;
 
-        public void Reset()
-        {
-            X = Y = Z = 0;
-        }
-        
-        public Vector3 ToUnit() => this / Length;
+        public static Vector3 UnitVector(Vector3 vector) => vector / vector.Length;
 
         public Task Write(TextWriter tw)
         {
@@ -46,17 +41,11 @@ namespace RayTracing
             g = Math.Sqrt(scale * g);
             b = Math.Sqrt(scale * b);
 
-            r = 256 * Clamp(r, 0.0, 0.999);
-            g = 256 * Clamp(g, 0.0, 0.999);
-            b = 256 * Clamp(b, 0.0, 0.999);
+            r = 256 * Math.Clamp(r, 0.0, 0.999);
+            g = 256 * Math.Clamp(g, 0.0, 0.999);
+            b = 256 * Math.Clamp(b, 0.0, 0.999);
             
             return tw.WriteLineAsync($"{(int)r} {(int)g} {(int)b}");
-        }
-
-        private double Clamp(double x, double min, double max)
-        {
-            if (x < min) return min;
-            return x > max ? max : x;
         }
 
         public static double DotProduct(Vector3 a, Vector3 b)
@@ -68,8 +57,8 @@ namespace RayTracing
         {
             return new Vector3(
                 a.Y * b.Z - a.Z * b.Y,
-                a.Z * b.X + a.X * b.Z,
-                a.X * b.Y + a.Y * b.X
+                a.Z * b.X - a.X * b.Z,
+                a.X * b.Y - a.Y * b.X
             );
         }
 
@@ -114,5 +103,22 @@ namespace RayTracing
             a.X / b,
             a.Y / b,
             a.Z / b);
+
+        public Color ToColor(in int samplesPerPixel)
+        {
+            var r = X;
+            var g = Y;
+            var b = Z;
+            var scale = 1.0 / samplesPerPixel;
+
+            r = Math.Sqrt(scale * r);
+            g = Math.Sqrt(scale * g);
+            b = Math.Sqrt(scale * b);
+
+            r = 256 * Math.Clamp(r, 0.0, 0.999);
+            g = 256 * Math.Clamp(g, 0.0, 0.999);
+            b = 256 * Math.Clamp(b, 0.0, 0.999);
+            return Color.FromArgb(255, (int)r, (int)g, (int)b);
+        }
     }
 }

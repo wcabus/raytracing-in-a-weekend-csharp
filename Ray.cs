@@ -1,6 +1,6 @@
 ﻿namespace RayTracing
 {
-    public class Ray
+    public readonly struct Ray
     {
         public Ray(Vector3 origin, Vector3 direction)
         {

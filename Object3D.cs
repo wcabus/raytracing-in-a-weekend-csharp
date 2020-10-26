@@ -7,7 +7,7 @@ namespace RayTracing
         public Vector3 P { get; protected internal set; }
         public Vector3 Normal { get; private set; }
         public double T { get; protected internal set; }
-        private bool FrontFace { get; set; }
+        public bool FrontFace { get; set; }
         
         public Material Material { get; protected set; }
 
